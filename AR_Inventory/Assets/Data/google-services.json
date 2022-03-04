@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "934456624407",
+    "firebase_url": "https://test-dc702-default-rtdb.firebaseio.com",
+    "project_id": "test-dc702",
+    "storage_bucket": "test-dc702.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934456624407:android:74006307aade955c036352",
+        "android_client_info": {
+          "package_name": "com.KylerM.ARInventory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "934456624407-8vnl2vmjpickn2kbq05mn6qctbam9e3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKq96SuUArFvP2KZYchFmPp53NjmOUtxQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "934456624407-8vnl2vmjpickn2kbq05mn6qctbam9e3h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
