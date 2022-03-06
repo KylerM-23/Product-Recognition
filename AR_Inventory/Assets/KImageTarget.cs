@@ -20,6 +20,7 @@ public class KImageTarget : MonoBehaviour
     bool loaded = false;
     Stack EventsTSC = new Stack();
     Stack EventsOB = new Stack();
+    Stack VirtualButtons = new Stack();
     public event Action ITDone;
     public bool active = false;
 
@@ -62,6 +63,11 @@ public class KImageTarget : MonoBehaviour
         display.SetText(message);
     }
 
+    private void VirtualButton(string VBName)
+    {
+        VirtualButtons.Push(IT.CreateVirtualButton(VBName, IT.transform.position, IT.GetSize()));
+    }
+
     public void kill()
     {
         active = false;
@@ -79,6 +85,13 @@ public class KImageTarget : MonoBehaviour
             var event2 = (Action<ObserverBehaviour, TargetStatus>)EventsTSC.Pop();
             IT.OnTargetStatusChanged -= event2;
         }
+
+        for (int i = 0; i < VirtualButtons.Count; i++)
+        {
+            var vb = (VirtualButtonBehaviour)VirtualButtons.Pop();
+            IT.DestroyVirtualButton(vb.VirtualButtonName);
+        }
+
         DestroyImmediate(IT);
         IT = null;
         Destroy(TimerClone);
