@@ -34,7 +34,7 @@ public class ButtonTarget : MonoBehaviour
         {
             var webrequest = UnityWebRequest.Get("jar:file://" + Application.dataPath + "!/assets/" + baseStr + databaseName + fileExt);
             webrequest.SendWebRequest();
-            while (!webrequest.isDone) ;
+            while (!webrequest.isDone);
             loadData(webrequest.downloadHandler.text, true);
         }
 

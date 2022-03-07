@@ -23,7 +23,8 @@ public class KImageTarget : MonoBehaviour
     Stack VirtualButtons = new Stack();
     public event Action ITDone;
     public bool active = false;
-
+    bool press = false;
+   
     private string basePath = "music/";
 
     public KImageTarget(string p, string n, float delay = .1f, GameObject ARoj = null, GameObject TObj = null)
@@ -45,6 +46,7 @@ public class KImageTarget : MonoBehaviour
         var timer = TimerClone.GetComponent<KTimer>();
         timer.TimerStop += kill;
         timer.StartTimer(delay);
+        VirtualButton("Button");
     }
 
     public void load_AROB(string message = "")
@@ -65,7 +67,11 @@ public class KImageTarget : MonoBehaviour
 
     private void VirtualButton(string VBName)
     {
-        VirtualButtons.Push(IT.CreateVirtualButton(VBName, IT.transform.position, IT.GetSize()));
+        var x = IT.CreateVirtualButton(VBName, IT.transform.position, IT.GetSize());
+        x.RegisterOnButtonPressed(OnClick);
+        x.RegisterOnButtonReleased(OnRelease);
+        x.SetSensitivity(Sensitivity.LOW);
+        VirtualButtons.Push(x);
     }
 
     public void kill()
@@ -110,6 +116,30 @@ public class KImageTarget : MonoBehaviour
         EventsOB.Push(ITDoneFunc);
     }
 
+    private void OnClick(VirtualButtonBehaviour x)
+    {
+        press = true;
+        if (loaded) updateScreen("OnClick");
+    }
+
+    private void OnRelease(VirtualButtonBehaviour x)
+    {
+        press = false;
+        if (loaded) updateScreen("OnRelease");
+    }
+    /*
+    private Album GetInformation(string pathEnd)
+    {
+        var firestore = FirebaseFirestore.DefaultInstance;
+        Album result = new Album();
+        firestore.Document(basePath + pathEnd ).GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            Assert.IsNull(task.Exception);
+            result = task.Result.ConvertTo<Album>();
+        });
+        return result;
+    }*/
+
     private void OnTSC(ObserverBehaviour observerbehavour, TargetStatus status)
     {
         if (status.Status == Status.TRACKED && status.StatusInfo == StatusInfo.NORMAL)
@@ -118,21 +148,21 @@ public class KImageTarget : MonoBehaviour
             timer.StopTimer();
             if (!loaded)
             {
+                load_AROB("Loading");
                 var firestore = FirebaseFirestore.DefaultInstance;
-                firestore.Document(basePath + observerbehavour.TargetName).GetSnapshotAsync().ContinueWithOnMainThread(task => 
+                firestore.Document(basePath + observerbehavour.TargetName).GetSnapshotAsync().ContinueWithOnMainThread(task =>
                 {
                     Assert.IsNull(task.Exception);
                     var result = task.Result.ConvertTo<Album>();
                     string resultStr = result.Name + "\n" + result.Artist;
                     updateScreen(resultStr);
                 });
-                load_AROB("Loading");
-
+                
             }
         }
         else 
         {
-            if (loaded)
+            if (loaded && !press)
             {
                 loaded = false;
                 Destroy(CloneARObj);

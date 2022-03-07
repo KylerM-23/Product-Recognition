@@ -1,11 +1,8 @@
 using Firebase.Firestore;
 
 [FirestoreData]
-public struct Album
+public class Album: FireStoreData
 {
-	[FirestoreProperty]
-	public string Name { get; set; }
-
 	[FirestoreProperty]
 	public string Artist { get; set; }
 
@@ -15,8 +12,7 @@ public struct Album
 	[FirestoreProperty]
 	public double Length { get; set; }
 
-	/*
 	[FirestoreProperty]
-	public dataType date { get; set; }
-	*/
+	public string Category { get; set; }
+
 }
