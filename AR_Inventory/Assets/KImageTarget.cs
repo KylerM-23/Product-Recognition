@@ -24,6 +24,7 @@ public class KImageTarget : MonoBehaviour
     public event Action ITDone;
     public bool active = false;
     bool press = false;
+    bool detailed = false;
    
     private string basePath = "music/";
 
@@ -118,14 +119,27 @@ public class KImageTarget : MonoBehaviour
 
     private void OnClick(VirtualButtonBehaviour x)
     {
-        press = true;
-        if (loaded) updateScreen("OnClick");
+        if (loaded)
+        {
+            press = true;
+            detailed = !detailed;
+            var firestore = FirebaseFirestore.DefaultInstance;
+            firestore.Document(basePath + IT.TargetName).GetSnapshotAsync().ContinueWithOnMainThread(task =>
+            {
+                Assert.IsNull(task.Exception);
+                var result = task.Result.ConvertTo<Album>();
+                string resultStr;
+                if (detailed) resultStr = result.Name + "\n" + result.Artist;
+                else resultStr = result.Name;
+                updateScreen(resultStr);
+            });
+        }
     }
 
     private void OnRelease(VirtualButtonBehaviour x)
     {
         press = false;
-        if (loaded) updateScreen("OnRelease");
+        //if (loaded) updateScreen("OnRelease");
     }
     /*
     private Album GetInformation(string pathEnd)
@@ -149,15 +163,7 @@ public class KImageTarget : MonoBehaviour
             if (!loaded)
             {
                 load_AROB("Loading");
-                var firestore = FirebaseFirestore.DefaultInstance;
-                firestore.Document(basePath + observerbehavour.TargetName).GetSnapshotAsync().ContinueWithOnMainThread(task =>
-                {
-                    Assert.IsNull(task.Exception);
-                    var result = task.Result.ConvertTo<Album>();
-                    string resultStr = result.Name + "\n" + result.Artist;
-                    updateScreen(resultStr);
-                });
-                
+                OnClick(null); 
             }
         }
         else 

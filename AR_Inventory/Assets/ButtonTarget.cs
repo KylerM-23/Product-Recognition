@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Xml;
 using System;
+using UnityEngine.SceneManagement;
 
 
 public class ButtonTarget : MonoBehaviour
@@ -15,6 +16,8 @@ public class ButtonTarget : MonoBehaviour
     public Text debugBox;
     public GameObject AROB;
     public GameObject TObj;
+    //string baseStr = "Vuforia/";
+    //string databaseName = "AlbumCover";
     string baseStr = "Vuforia/";
     string databaseName = "AlbumCover";
     string fileExt = ".xml";
@@ -24,6 +27,7 @@ public class ButtonTarget : MonoBehaviour
     private int place = 0;
     int counter = 0;
     bool found = false;
+    bool search = false;
     XmlDocument dataBase = new XmlDocument();
 
     // Start is called before the first frame update
@@ -38,7 +42,7 @@ public class ButtonTarget : MonoBehaviour
             loadData(webrequest.downloadHandler.text, true);
         }
 
-        else  loadData("Assets/StreamingAssets/Vuforia/AlbumCover.xml");
+        else  loadData("Assets/StreamingAssets/" + baseStr + databaseName + fileExt);
 
         textBox.text = "Press Search When Ready.";
     }
@@ -80,6 +84,12 @@ public class ButtonTarget : MonoBehaviour
 
     public void Search()
     {
+        if (search)
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            SceneManager.LoadScene(scene.name);
+        }
+        search = true;
         ClearImages();
         place = 0;
         found = false;
