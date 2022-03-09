@@ -4,6 +4,9 @@ using UnityEngine;
 using Vuforia;
 using UnityEngine.UI;
 using UnityEngine.Networking;
+using Firebase.Firestore;
+using Firebase.Extensions;
+using UnityEngine.Assertions;
 using System.Xml;
 using System;
 using UnityEngine.SceneManagement;
@@ -19,32 +22,74 @@ public class ButtonTarget : MonoBehaviour
     //string baseStr = "Vuforia/";
     //string databaseName = "AlbumCover";
     string baseStr = "Vuforia/";
-    string databaseName = "AlbumCover";
+    string databaseName = "Music/Sabaton/Sabaton_Covers";
     string fileExt = ".xml";
     private string[] names;
     Stack kImages = new Stack();
+    Stack categories = new Stack();
+    Stack databases = new Stack();
     int max = 0;
     private int place = 0;
     int counter = 0;
     bool found = false;
     bool search = false;
+    bool searchReady = false;
     XmlDocument dataBase = new XmlDocument();
+    delegate void Stage(); //delegate for stages that occur one after another.
+    Stage[] stages = new Stage[3];
 
     // Start is called before the first frame update
     void Start()
+    {
+        stages[0] = new Stage(loadCategories);
+        stages[1] = new Stage(loadDatabasePaths);
+        stages[2] = new Stage(configDatabase);
+
+        stages[0]();
+    }
+
+    private void loadCategories()
+    { 
+        var firestore = FirebaseFirestore.DefaultInstance;
+        firestore.Document("Databases/Categories/").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+            {
+                Assert.IsNull(task.Exception);
+                var result = task.Result.ToDictionary();
+                for (int i = 0; i < (int)result["max"]; i++)
+                    categories.Push(result[i.ToString()]);
+                stages[1]();
+            });
+    }
+
+    private void loadDatabasePaths()
+    {
+        /*
+        var firestore = FirebaseFirestore.DefaultInstance;
+        firestore.Document("Databases/Categories/").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            Assert.IsNull(task.Exception);
+            var result = task.Result.ToDictionary();
+            for (int i = 0; i < (int)result["max"]; i++)
+                categories.Push(result[i.ToString()]);
+            stages[2]();
+        });*/
+    }
+
+    private void configDatabase()
     {
         debugBox.text = "";
         if (Application.platform == RuntimePlatform.Android)
         {
             var webrequest = UnityWebRequest.Get("jar:file://" + Application.dataPath + "!/assets/" + baseStr + databaseName + fileExt);
             webrequest.SendWebRequest();
-            while (!webrequest.isDone);
+            while (!webrequest.isDone) ;
             loadData(webrequest.downloadHandler.text, true);
         }
 
-        else  loadData("Assets/StreamingAssets/" + baseStr + databaseName + fileExt);
+        else loadData("Assets/StreamingAssets/" + baseStr + databaseName + fileExt);
 
         textBox.text = "Press Search When Ready.";
+        searchReady = true;
     }
 
     private void loadData(string p, bool mode = false)
@@ -84,19 +129,22 @@ public class ButtonTarget : MonoBehaviour
 
     public void Search()
     {
-        if (search)
+        if (searchReady)
         {
-            Scene scene = SceneManager.GetActiveScene();
-            SceneManager.LoadScene(scene.name);
+            if (search)
+            {
+                Scene scene = SceneManager.GetActiveScene();
+                SceneManager.LoadScene(scene.name);
+            }
+            search = true;
+            ClearImages();
+            place = 0;
+            found = false;
+            textBox.text = "Prepping Search";
+            counter = 0;
+            textBox.text = "Searching...";
+            createImageTarget(3f);
         }
-        search = true;
-        ClearImages();
-        place = 0;
-        found = false;
-        textBox.text = "Prepping Search";
-        counter = 0;
-        textBox.text = "Searching...";
-        createImageTarget(3f);
     }
 
     public void SearchFail()
