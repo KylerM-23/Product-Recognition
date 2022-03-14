@@ -9,34 +9,30 @@ using Firebase.Extensions;
 using UnityEngine.Assertions;
 
 
-public class KImageTarget : MonoBehaviour
+public class KImageTarget : KTrackable
 {
-    public ImageTargetBehaviour IT;
-    public GameObject ARobject;
-    public GameObject CloneARObj;
+    ImageTargetBehaviour IT;
+    GameObject ARobject;
+    protected GameObject CloneARObj;
     public GameObject Timer;
-    public GameObject TimerClone;
-    string name, path;
+    protected GameObject TimerClone;
+
     bool loaded = false;
-    Stack EventsTSC = new Stack();
-    Stack EventsOB = new Stack();
-    Stack VirtualButtons = new Stack();
     public event Action ITDone;
-    public bool active = false;
+
     bool press = false;
-    bool detailed = false;
-   
-    private string basePath = "music/";
+
 
     public KImageTarget(string p, string n, float delay = .1f, GameObject ARoj = null, GameObject TObj = null)
     {
+        active = false;
         path = p;
         name = n;
         IT = VuforiaBehaviour.Instance.ObserverFactory.CreateImageTarget(path, name);
         ARobject = ARoj;
         Timer = TObj;
         activate_IT(delay);
-        addEvent(OnTSC);  
+        addEvent(OnTSC);
     }
 
     public void activate_IT(float delay = .1f)
@@ -47,35 +43,18 @@ public class KImageTarget : MonoBehaviour
         var timer = TimerClone.GetComponent<KTimer>();
         timer.TimerStop += kill;
         timer.StartTimer(delay);
-        VirtualButton("Button");
     }
 
-    public void load_AROB(string message = "")
+    public void load_AROB()
     {
         loaded = true;
         CloneARObj = Instantiate(ARobject, new Vector3(-0.5f,-7,0), Quaternion.identity);
         CloneARObj.transform.parent = IT.transform;
         CloneARObj.transform.Rotate(new Vector3(0, 90, 0));
-        var display = CloneARObj.GetComponent<Display>();
-        display.SetText(message);
     }
 
-    public void updateScreen(string message = "")
-    {
-        var display = CloneARObj.GetComponent<Display>();
-        display.SetText(message);
-    }
 
-    private void VirtualButton(string VBName)
-    {
-        var x = IT.CreateVirtualButton(VBName, IT.transform.position, IT.GetSize());
-        x.RegisterOnButtonPressed(OnClick);
-        x.RegisterOnButtonReleased(OnRelease);
-        x.SetSensitivity(Sensitivity.LOW);
-        VirtualButtons.Push(x);
-    }
-
-    public void kill()
+    public override void kill()
     {
         active = false;
         IT.enabled = false;
@@ -93,14 +72,8 @@ public class KImageTarget : MonoBehaviour
             IT.OnTargetStatusChanged -= event2;
         }
 
-        for (int i = 0; i < VirtualButtons.Count; i++)
-        {
-            var vb = (VirtualButtonBehaviour)VirtualButtons.Pop();
-            IT.DestroyVirtualButton(vb.VirtualButtonName);
-        }
-
         DestroyImmediate(IT);
-        IT = null;
+        IT = null; 
         Destroy(TimerClone);
         if (loaded) Destroy(CloneARObj);
     }
@@ -117,42 +90,6 @@ public class KImageTarget : MonoBehaviour
         EventsOB.Push(ITDoneFunc);
     }
 
-    private void OnClick(VirtualButtonBehaviour x)
-    {
-        if (loaded)
-        {
-            press = true;
-            detailed = !detailed;
-            var firestore = FirebaseFirestore.DefaultInstance;
-            firestore.Document(basePath + IT.TargetName).GetSnapshotAsync().ContinueWithOnMainThread(task =>
-            {
-                Assert.IsNull(task.Exception);
-                var result = task.Result.ConvertTo<Album>();
-                string resultStr;
-                if (detailed) resultStr = result.Name + "\n" + result.Artist;
-                else resultStr = result.Name;
-                updateScreen(resultStr);
-            });
-        }
-    }
-
-    private void OnRelease(VirtualButtonBehaviour x)
-    {
-        press = false;
-        //if (loaded) updateScreen("OnRelease");
-    }
-    /*
-    private Album GetInformation(string pathEnd)
-    {
-        var firestore = FirebaseFirestore.DefaultInstance;
-        Album result = new Album();
-        firestore.Document(basePath + pathEnd ).GetSnapshotAsync().ContinueWithOnMainThread(task =>
-        {
-            Assert.IsNull(task.Exception);
-            result = task.Result.ConvertTo<Album>();
-        });
-        return result;
-    }*/
 
     private void OnTSC(ObserverBehaviour observerbehavour, TargetStatus status)
     {
@@ -162,8 +99,7 @@ public class KImageTarget : MonoBehaviour
             timer.StopTimer();
             if (!loaded)
             {
-                load_AROB("Loading");
-                OnClick(null); 
+                load_AROB();
             }
         }
         else 

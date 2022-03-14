@@ -19,65 +19,103 @@ public class ButtonTarget : MonoBehaviour
     public Text debugBox;
     public GameObject AROB;
     public GameObject TObj;
-    //string baseStr = "Vuforia/";
-    //string databaseName = "AlbumCover";
     string baseStr = "Vuforia/";
-    string databaseName = "Music/Sabaton/Sabaton_Covers";
+    string databaseName = "";
     string fileExt = ".xml";
     private string[] names;
     Stack kImages = new Stack();
-    Stack categories = new Stack();
+
     Stack databases = new Stack();
+    Stack collections = new Stack();
+
+    AutoList<string> categories = new AutoList<string>();
+    string category = "";
+    string targetType = "";
     int max = 0;
     private int place = 0;
     int counter = 0;
     bool found = false;
     bool search = false;
     bool searchReady = false;
+    
     XmlDocument dataBase = new XmlDocument();
+    
     delegate void Stage(); //delegate for stages that occur one after another.
-    Stage[] stages = new Stage[3];
+    Stage[] stages = new Stage[4];
+
+    delegate void CreateImageTarget(float delay = .1f);
+    CreateImageTarget CIT = null;
 
     // Start is called before the first frame update
     void Start()
     {
+        debugBox.text = "Start";
         stages[0] = new Stage(loadCategories);
-        stages[1] = new Stage(loadDatabasePaths);
-        stages[2] = new Stage(configDatabase);
+        stages[1] = new Stage(loadCollections);
+        stages[2] = new Stage(loadDatabasePaths);
+        stages[3] = new Stage(configDatabase);
 
         stages[0]();
     }
 
     private void loadCategories()
-    { 
+    {
         var firestore = FirebaseFirestore.DefaultInstance;
-        firestore.Document("Databases/Categories/").GetSnapshotAsync().ContinueWithOnMainThread(task =>
-            {
+        firestore.Document("Common/CommonInfo").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
                 Assert.IsNull(task.Exception);
                 var result = task.Result.ToDictionary();
-                for (int i = 0; i < (int)result["max"]; i++)
-                    categories.Push(result[i.ToString()]);
+                debugBox.text = "Stage 0.1";
+                List<object> tem = (List<object>) result["Categories"];
+                debugBox.text = "Stage 0.2";
+                for (int i = 0; i < tem.Count; i++)
+                {
+                    string x = (string) tem[i];
+                    categories.AddItem(x);
+                }
                 stages[1]();
-            });
+        });
+    }
+    private void loadCollections()
+    {
+        category = categories.GetItem();
+        var firestore = FirebaseFirestore.DefaultInstance;
+        firestore.Document(category + "/DatabaseRefrences").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            Assert.IsNull(task.Exception);
+            var result = task.Result.ToDictionary();
+            debugBox.text = "Stage 1.1";
+            List<object> tem = (List<object>)result["Ref"];
+            debugBox.text = "Stage 1.2";
+            for (int i = 0; i < tem.Count; i++)
+            {
+                var x = tem[i];
+                collections.Push(x);
+            }
+            stages[2]();
+        });
     }
 
     private void loadDatabasePaths()
     {
-        /*
-        var firestore = FirebaseFirestore.DefaultInstance;
-        firestore.Document("Databases/Categories/").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        debugBox.text = "Stage 2";
+        var doc = (DocumentReference)collections.Pop();
+        doc.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             Assert.IsNull(task.Exception);
             var result = task.Result.ToDictionary();
-            for (int i = 0; i < (int)result["max"]; i++)
-                categories.Push(result[i.ToString()]);
-            stages[2]();
-        });*/
+            databases.Push(result);
+            stages[3]();
+        });
     }
 
     private void configDatabase()
     {
-        debugBox.text = "";
+        var data = (Dictionary<string, string>) databases.Pop();
+        databaseName = category + "/" + data["path"];
+        targetType = data["type"];
+
+        debugBox.text = databaseName;
         if (Application.platform == RuntimePlatform.Android)
         {
             var webrequest = UnityWebRequest.Get("jar:file://" + Application.dataPath + "!/assets/" + baseStr + databaseName + fileExt);
@@ -108,6 +146,31 @@ public class ButtonTarget : MonoBehaviour
         }
     }
 
+    public void Search()
+    {
+        if (searchReady)
+        {
+            if (search)
+            {
+                Scene scene = SceneManager.GetActiveScene();
+                SceneManager.LoadScene(scene.name);
+            }
+
+            if (targetType == "Music")
+                CIT = createMIT;
+            else
+                CIT = createImageTarget;
+            search = true;
+            ClearImages();
+            place = 0;
+            found = false;
+            textBox.text = "Prepping Search";
+            counter = 0;
+            textBox.text = "Searching...";
+            CIT(3f);
+        }
+    }
+
     public void createImageTarget(float delay = .1f)
     {
         if (!found)
@@ -127,23 +190,22 @@ public class ButtonTarget : MonoBehaviour
         }
     }
 
-    public void Search()
+    public void createMIT(float delay = .1f)
     {
-        if (searchReady)
+        if (!found)
         {
-            if (search)
+            for (int i = 0; i < n; i++)
             {
-                Scene scene = SceneManager.GetActiveScene();
-                SceneManager.LoadScene(scene.name);
+                if (place < max)
+                {
+                    KImageTarget kIT = new KImageTarget(baseStr + databaseName + fileExt, names[place], delay, AROB, TObj);
+                    kIT.addEvent(OnTargetStatusChanged);
+                    kIT.addEvent(IncrementCount);
+                    kImages.Push(kIT);
+                    place++;
+                    textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
+                }
             }
-            search = true;
-            ClearImages();
-            place = 0;
-            found = false;
-            textBox.text = "Prepping Search";
-            counter = 0;
-            textBox.text = "Searching...";
-            createImageTarget(3f);
         }
     }
 
@@ -164,7 +226,7 @@ public class ButtonTarget : MonoBehaviour
         textBox.text = "Searching...";
         counter = 0;
         ClearImages();
-        createImageTarget();
+        CIT();
     }
 
     void OnTargetStatusChanged(ObserverBehaviour observerbehavour, TargetStatus status)
