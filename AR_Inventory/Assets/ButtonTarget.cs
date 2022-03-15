@@ -17,8 +17,11 @@ public class ButtonTarget : MonoBehaviour
     const int n = 4;
     public Text textBox;
     public Text debugBox;
-    public GameObject AROB;
+    public GameObject ARobject;
     public GameObject TObj;
+
+    public GameObject CategoryManager;
+
     string baseStr = "Vuforia/";
     string databaseName = "";
     string fileExt = ".xml";
@@ -28,6 +31,8 @@ public class ButtonTarget : MonoBehaviour
     Stack databases = new Stack();
     Stack collections = new Stack();
 
+    Dictionary<string, object> databaseData;
+
     AutoList<string> categories = new AutoList<string>();
     string category = "";
     string targetType = "";
@@ -35,13 +40,10 @@ public class ButtonTarget : MonoBehaviour
     private int place = 0;
     int counter = 0;
     bool found = false;
-    bool search = false;
+    bool done = false;
     bool searchReady = false;
     
     XmlDocument dataBase = new XmlDocument();
-    
-    delegate void Stage(); //delegate for stages that occur one after another.
-    Stage[] stages = new Stage[4];
 
     delegate void CreateImageTarget(float delay = .1f);
     CreateImageTarget CIT = null;
@@ -50,30 +52,42 @@ public class ButtonTarget : MonoBehaviour
     void Start()
     {
         debugBox.text = "Start";
-        stages[0] = new Stage(loadCategories);
-        stages[1] = new Stage(loadCollections);
-        stages[2] = new Stage(loadDatabasePaths);
-        stages[3] = new Stage(configDatabase);
-
-        stages[0]();
+        loadCategories();
     }
+
+    private void DatabaseEmpty()
+    {
+        searchReady = false;
+        if (databases.Count == 0)
+        {
+            if (collections.Count == 0)
+            {
+                if (categories.GetLooped())
+                    SearchFail();
+                else loadCollections();
+            }
+            else loadDatabasePaths();
+        }
+        else configDatabase();
+    }
+
 
     private void loadCategories()
     {
         var firestore = FirebaseFirestore.DefaultInstance;
         firestore.Document("Common/CommonInfo").GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
-                Assert.IsNull(task.Exception);
-                var result = task.Result.ToDictionary();
-                debugBox.text = "Stage 0.1";
-                List<object> tem = (List<object>) result["Categories"];
-                debugBox.text = "Stage 0.2";
-                for (int i = 0; i < tem.Count; i++)
-                {
-                    string x = (string) tem[i];
-                    categories.AddItem(x);
-                }
-                stages[1]();
+            Assert.IsNull(task.Exception);
+            var result = task.Result.ToDictionary();
+            debugBox.text = "Stage 0.1";
+            List<object> tem = (List<object>) result["Categories"];
+            debugBox.text = "Stage 0.2";
+            for (int i = 0; i < tem.Count; i++)
+            {
+                string x = (string) tem[i];
+                categories.AddItem(x);
+            }
+            loadCollections();
         });
     }
     private void loadCollections()
@@ -92,7 +106,7 @@ public class ButtonTarget : MonoBehaviour
                 var x = tem[i];
                 collections.Push(x);
             }
-            stages[2]();
+            loadDatabasePaths();
         });
     }
 
@@ -105,16 +119,21 @@ public class ButtonTarget : MonoBehaviour
             Assert.IsNull(task.Exception);
             var result = task.Result.ToDictionary();
             databases.Push(result);
-            stages[3]();
+            Debug.Log(result.GetType());
+            configDatabase();
         });
     }
 
     private void configDatabase()
     {
-        var data = (Dictionary<string, string>) databases.Pop();
-        databaseName = category + "/" + data["path"];
-        targetType = data["type"];
+        debugBox.text = "Stage 3";
+        
+        databaseData = (Dictionary<string, object>)databases.Pop();
 
+        debugBox.text = "Stage 3.1"; 
+        databaseName = category + "/" + (string) databaseData["path"];
+        debugBox.text = "Stage 3.2";
+        targetType = (string) databaseData["type"];
         debugBox.text = databaseName;
         if (Application.platform == RuntimePlatform.Android)
         {
@@ -148,19 +167,19 @@ public class ButtonTarget : MonoBehaviour
 
     public void Search()
     {
+        if (found|done)
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            SceneManager.LoadScene(scene.name);
+        }
+
         if (searchReady)
         {
-            if (search)
-            {
-                Scene scene = SceneManager.GetActiveScene();
-                SceneManager.LoadScene(scene.name);
-            }
-
-            if (targetType == "Music")
+            if (targetType == "Image" && category == "Music")
                 CIT = createMIT;
             else
                 CIT = createImageTarget;
-            search = true;
+            
             ClearImages();
             place = 0;
             found = false;
@@ -179,7 +198,9 @@ public class ButtonTarget : MonoBehaviour
             {
                 if (place < max)
                 {
-                    KImageTarget kIT = new KImageTarget(baseStr + databaseName + fileExt, names[place], delay, AROB, TObj);
+                    var ARobjClone = Instantiate(ARobject, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                    var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                    KImageTarget kIT = new KImageTarget(baseStr + databaseName + fileExt, names[place], delay, ARobjClone, TimerClone);
                     kIT.addEvent(OnTargetStatusChanged);
                     kIT.addEvent(IncrementCount);
                     kImages.Push(kIT);
@@ -194,14 +215,18 @@ public class ButtonTarget : MonoBehaviour
     {
         if (!found)
         {
+            string artist = (string) databaseData["Artist"];
+            debugBox.text = artist;
             for (int i = 0; i < n; i++)
             {
                 if (place < max)
                 {
-                    KImageTarget kIT = new KImageTarget(baseStr + databaseName + fileExt, names[place], delay, AROB, TObj);
-                    kIT.addEvent(OnTargetStatusChanged);
-                    kIT.addEvent(IncrementCount);
-                    kImages.Push(kIT);
+                    var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Music");
+                    var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                    MusicImageTarget MIT = new MusicImageTarget(baseStr + databaseName + fileExt, names[place], ARobjClone, TimerClone, artist, delay);  
+                    MIT.addEvent(OnTargetStatusChanged);
+                    MIT.addEvent(IncrementCount);
+                    kImages.Push(MIT);
                     place++;
                     textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
                 }
@@ -211,13 +236,14 @@ public class ButtonTarget : MonoBehaviour
 
     public void SearchFail()
     {
+        done = true;
         textBox.text = "Search Failed.";
     }
 
     void IncrementCount()
     {
         counter++;
-        if (place >= max && found == false) SearchFail();
+        if (place >= max && found == false) DatabaseEmpty();
         if (counter >= n && found != true) IncrementRestart();
     }
 

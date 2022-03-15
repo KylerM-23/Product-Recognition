@@ -7,7 +7,7 @@ public class MusicImageTarget : KImageTarget
 
     public string Artist = "";
 
-    public MusicImageTarget(string p, string n, GameObject ARObj, string a, float delay = .1f, GameObject TObj = null) :
+    public MusicImageTarget(string p, string n, GameObject ARObj, GameObject TObj, string a, float delay = .1f) :
         base(p, n, delay, ARObj, TObj)
     {
         Artist = a;

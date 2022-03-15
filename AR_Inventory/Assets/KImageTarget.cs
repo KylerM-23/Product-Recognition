@@ -12,10 +12,9 @@ using UnityEngine.Assertions;
 public class KImageTarget : KTrackable
 {
     ImageTargetBehaviour IT;
-    GameObject ARobject;
-    protected GameObject CloneARObj;
-    public GameObject Timer;
-    protected GameObject TimerClone;
+
+    protected GameObject ARObj;
+    protected GameObject Timer;
 
     bool loaded = false;
     public event Action ITDone;
@@ -29,7 +28,8 @@ public class KImageTarget : KTrackable
         path = p;
         name = n;
         IT = VuforiaBehaviour.Instance.ObserverFactory.CreateImageTarget(path, name);
-        ARobject = ARoj;
+        ARObj = ARoj;
+        ARObj.SetActive(false);
         Timer = TObj;
         activate_IT(delay);
         addEvent(OnTSC);
@@ -39,8 +39,7 @@ public class KImageTarget : KTrackable
     {
         active = true;
         IT.enabled = true;
-        TimerClone = Instantiate(Timer);
-        var timer = TimerClone.GetComponent<KTimer>();
+        var timer = Timer.GetComponent<KTimer>();
         timer.TimerStop += kill;
         timer.StartTimer(delay);
     }
@@ -48,9 +47,10 @@ public class KImageTarget : KTrackable
     public void load_AROB()
     {
         loaded = true;
-        CloneARObj = Instantiate(ARobject, new Vector3(-0.5f,-7,0), Quaternion.identity);
-        CloneARObj.transform.parent = IT.transform;
-        CloneARObj.transform.Rotate(new Vector3(0, 90, 0));
+        ARObj.transform.position = new Vector3(-0.5f, -7, 0);
+        ARObj.transform.parent = IT.transform;
+        ARObj.SetActive(true);
+        ARObj.transform.Rotate(new Vector3(0, 180, 0));
     }
 
 
@@ -74,8 +74,8 @@ public class KImageTarget : KTrackable
 
         DestroyImmediate(IT);
         IT = null; 
-        Destroy(TimerClone);
-        if (loaded) Destroy(CloneARObj);
+        Destroy(Timer);
+        Destroy(ARObj);
     }
 
     public void addEvent(Action<ObserverBehaviour, TargetStatus> OnTargetStatusChanged)
@@ -95,7 +95,7 @@ public class KImageTarget : KTrackable
     {
         if (status.Status == Status.TRACKED && status.StatusInfo == StatusInfo.NORMAL)
         {
-            var timer = TimerClone.GetComponent<KTimer>();
+            var timer = Timer.GetComponent<KTimer>();
             timer.StopTimer();
             if (!loaded)
             {
@@ -107,7 +107,7 @@ public class KImageTarget : KTrackable
             if (loaded && !press)
             {
                 loaded = false;
-                Destroy(CloneARObj);
+                ARObj.SetActive(false);
             }
         }
     }

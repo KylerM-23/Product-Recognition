@@ -6,7 +6,8 @@ public class AutoList<T>
 {
     private List<T> list = new List<T>();
     private int index = 0;
-    
+    private bool looped = false;
+
     public void AddItem(T item)
     {
         list.Add(item);
@@ -19,7 +20,11 @@ public class AutoList<T>
         {
             result = list[index];
             index++;
-            if (index >= list.Count) index = 0;
+            if (index >= list.Count)
+            {
+                looped = true;
+                index = 0;
+            }
         }
         return result;
         
@@ -28,5 +33,11 @@ public class AutoList<T>
     public void Reset()
     {
         index = 0;
+        looped = false;
+    }
+
+    public bool GetLooped()
+    {
+        return looped;
     }
 }
