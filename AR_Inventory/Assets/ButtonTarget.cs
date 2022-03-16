@@ -41,6 +41,7 @@ public class ButtonTarget : MonoBehaviour
     int counter = 0;
     bool found = false;
     bool done = false;
+    bool loading = false;
     bool searchReady = false;
     
     XmlDocument dataBase = new XmlDocument();
@@ -75,12 +76,11 @@ public class ButtonTarget : MonoBehaviour
     private void loadCategories()
     {
         var firestore = FirebaseFirestore.DefaultInstance;
-        firestore.Document("Common/CommonInfo").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        firestore.Document("Databases/Categories").GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
-            Assert.IsNull(task.Exception);
             var result = task.Result.ToDictionary();
             debugBox.text = "Stage 0.1";
-            List<object> tem = (List<object>) result["Categories"];
+            List<object> tem = (List<object>) result["categories"];
             debugBox.text = "Stage 0.2";
             for (int i = 0; i < tem.Count; i++)
             {
@@ -119,7 +119,6 @@ public class ButtonTarget : MonoBehaviour
             Assert.IsNull(task.Exception);
             var result = task.Result.ToDictionary();
             databases.Push(result);
-            Debug.Log(result.GetType());
             configDatabase();
         });
     }
@@ -147,6 +146,7 @@ public class ButtonTarget : MonoBehaviour
 
         textBox.text = "Press Search When Ready.";
         searchReady = true;
+        Search();
     }
 
     private void loadData(string p, bool mode = false)
@@ -165,14 +165,14 @@ public class ButtonTarget : MonoBehaviour
         }
     }
 
-    public void Search()
+    public void RestartSearch()
     {
-        if (found|done)
-        {
-            Scene scene = SceneManager.GetActiveScene();
-            SceneManager.LoadScene(scene.name);
-        }
+        Scene scene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(scene.name);
+    }
 
+    private void Search()
+    {
         if (searchReady)
         {
             if (targetType == "Image" && category == "Music")

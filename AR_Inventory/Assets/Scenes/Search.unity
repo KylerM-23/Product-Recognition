@@ -323,6 +323,7 @@ GameObject:
   m_Component:
   - component: {fileID: 482201389}
   - component: {fileID: 482201388}
+  - component: {fileID: 482201390}
   m_Layer: 0
   m_Name: CategoryObjStorage
   m_TagString: Untagged
@@ -360,6 +361,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &482201390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 482201387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bcd24f7afef0ba41b74f61080999fc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &608907041
 GameObject:
   m_ObjectHideFlags: 0
@@ -445,7 +458,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1037570124}
         m_TargetAssemblyTypeName: ButtonTarget, Assembly-CSharp
-        m_MethodName: Search
+        m_MethodName: RestartSearch
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -597,6 +610,7 @@ GameObject:
   - component: {fileID: 1037570125}
   - component: {fileID: 1037570124}
   - component: {fileID: 1037570126}
+  - component: {fileID: 1037570127}
   m_Layer: 0
   m_Name: TargetManager
   m_TagString: Untagged
@@ -651,6 +665,18 @@ MonoBehaviour:
   OnFirebaseInitialized:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1037570127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037570123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bcd24f7afef0ba41b74f61080999fc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1205675613
 GameObject:
   m_ObjectHideFlags: 0
