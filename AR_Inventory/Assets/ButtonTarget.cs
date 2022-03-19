@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using Vuforia;
 using UnityEngine.UI;
-using UnityEngine.Networking;
+
 using Firebase.Firestore;
 using Firebase.Extensions;
 using UnityEngine.Assertions;
-using System.Xml;
 using System;
 using UnityEngine.SceneManagement;
+
+
 
 
 public class ButtonTarget : MonoBehaviour
@@ -20,12 +21,16 @@ public class ButtonTarget : MonoBehaviour
     public GameObject ARobject;
     public GameObject TObj;
 
+    public Button restartButton;
+
     public GameObject CategoryManager;
 
     string baseStr = "Vuforia/";
     string databaseName = "";
     string fileExt = ".xml";
-    private string[] names;
+
+    XML_Loader xml_loader = new XML_Loader();
+
     Stack kImages = new Stack();
 
     Stack databases = new Stack();
@@ -33,6 +38,7 @@ public class ButtonTarget : MonoBehaviour
 
     Dictionary<string, object> databaseData;
 
+    string[] names;
     AutoList<string> categories = new AutoList<string>();
     string category = "";
     string targetType = "";
@@ -44,7 +50,7 @@ public class ButtonTarget : MonoBehaviour
     bool loading = false;
     bool searchReady = false;
     
-    XmlDocument dataBase = new XmlDocument();
+    
 
     delegate void CreateImageTarget(float delay = .1f);
     CreateImageTarget CIT = null;
@@ -52,7 +58,7 @@ public class ButtonTarget : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        debugBox.text = "Start";
+        restartButton.gameObject.SetActive(false);
         loadCategories();
     }
 
@@ -79,9 +85,7 @@ public class ButtonTarget : MonoBehaviour
         firestore.Document("Databases/Categories").GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             var result = task.Result.ToDictionary();
-            debugBox.text = "Stage 0.1";
             List<object> tem = (List<object>) result["categories"];
-            debugBox.text = "Stage 0.2";
             for (int i = 0; i < tem.Count; i++)
             {
                 string x = (string) tem[i];
@@ -134,35 +138,16 @@ public class ButtonTarget : MonoBehaviour
         debugBox.text = "Stage 3.2";
         targetType = (string) databaseData["type"];
         debugBox.text = databaseName;
-        if (Application.platform == RuntimePlatform.Android)
-        {
-            var webrequest = UnityWebRequest.Get("jar:file://" + Application.dataPath + "!/assets/" + baseStr + databaseName + fileExt);
-            webrequest.SendWebRequest();
-            while (!webrequest.isDone) ;
-            loadData(webrequest.downloadHandler.text, true);
-        }
-
-        else loadData("Assets/StreamingAssets/" + baseStr + databaseName + fileExt);
-
+        xml_loader.LoadXMLDatabase(baseStr + databaseName, targetType);
+        names = xml_loader.GetItemNames();
+        max = names.Length;
         textBox.text = "Press Search When Ready.";
         searchReady = true;
-        Search();
-    }
-
-    private void loadData(string p, bool mode = false)
-    {
-        if (mode) dataBase.LoadXml(p);
-        else dataBase.Load(p);
-        XmlElement root = dataBase.DocumentElement;
-        XmlNodeList nodes = root.SelectNodes("Tracking/ImageTarget");
-        max = nodes.Count;
-        names = new string[max];
-        int temp = 0;
-        foreach (XmlNode node in nodes)
-        {
-            names[temp] = node.Attributes["name"].InnerText;
-            temp++;
-        }
+        var kTimer = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+        var timer = kTimer.GetComponent<KTimer>();
+        timer.TimerStop += Search;
+        timer.StartTimer(1);
+        
     }
 
     public void RestartSearch()
@@ -173,6 +158,7 @@ public class ButtonTarget : MonoBehaviour
 
     private void Search()
     {
+        restartButton.gameObject.SetActive(false);
         if (searchReady)
         {
             if (targetType == "Image" && category == "Music")
@@ -223,7 +209,7 @@ public class ButtonTarget : MonoBehaviour
                 {
                     var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Music");
                     var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
-                    MusicImageTarget MIT = new MusicImageTarget(baseStr + databaseName + fileExt, names[place], ARobjClone, TimerClone, artist, delay);  
+                    MusicImageTarget MIT = new MusicImageTarget(baseStr + databaseName + fileExt, names[place], ARobjClone, TimerClone, artist, delay);
                     MIT.addEvent(OnTargetStatusChanged);
                     MIT.addEvent(IncrementCount);
                     kImages.Push(MIT);
@@ -237,6 +223,7 @@ public class ButtonTarget : MonoBehaviour
     public void SearchFail()
     {
         done = true;
+        restartButton.gameObject.SetActive(true);
         textBox.text = "Search Failed.";
     }
 
@@ -259,6 +246,7 @@ public class ButtonTarget : MonoBehaviour
     {
         if (status.Status == Status.TRACKED && status.StatusInfo == StatusInfo.NORMAL)
         {
+            restartButton.gameObject.SetActive(true);
             textBox.text = "Found " + observerbehavour.TargetName;
             found = true;
         }
@@ -273,5 +261,10 @@ public class ButtonTarget : MonoBehaviour
             DestroyImmediate(kIT);
             kIT = null;
         }
+    }
+
+    public static void LoadMainMenu()
+    {
+        SceneManager.LoadScene("Scenes/Start");
     }
 }

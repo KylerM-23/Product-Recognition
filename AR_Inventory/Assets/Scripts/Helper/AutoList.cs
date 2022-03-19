@@ -18,13 +18,15 @@ public class AutoList<T>
         T result = default(T);
         if (list.Count > 0)
         {
-            result = list[index];
-            index++;
             if (index >= list.Count)
             {
                 looped = true;
                 index = 0;
             }
+
+            result = list[index];
+            index++;
+            
         }
         return result;
         
