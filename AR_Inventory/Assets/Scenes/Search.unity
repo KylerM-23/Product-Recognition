@@ -478,8 +478,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   keys:
   - Music
+  - Video_Games
   items:
   - {fileID: 7445507092487354669, guid: 8923510878c9fd847ac7c07a123e84a7, type: 3}
+  - {fileID: 2519988322593225614, guid: 07fc5979b8340ae4f8fcfa295a17bc42, type: 3}
 --- !u!4 &482201389
 Transform:
   m_ObjectHideFlags: 0
@@ -503,7 +505,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 482201387}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4bcd24f7afef0ba41b74f61080999fc5, type: 3}
+  m_Script: {fileID: 0}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &608907041
@@ -743,6 +745,7 @@ GameObject:
   - component: {fileID: 1037570125}
   - component: {fileID: 1037570124}
   - component: {fileID: 1037570126}
+  - component: {fileID: 1037570127}
   m_Layer: 0
   m_Name: TargetManager
   m_TagString: Untagged
@@ -798,6 +801,18 @@ MonoBehaviour:
   OnFirebaseInitialized:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1037570127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1037570123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 285f7c15dd26a1f4ea1bbc97befdd529, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1205675613
 GameObject:
   m_ObjectHideFlags: 0

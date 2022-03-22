@@ -7,7 +7,6 @@ public class CategoryRetrival : MonoBehaviour
     public string[] keys;
     public GameObject[] items;
     Dictionary<string, GameObject> storage = new Dictionary<string, GameObject>();
-    // Start is called before the first frame update
 
     void Start()
     {

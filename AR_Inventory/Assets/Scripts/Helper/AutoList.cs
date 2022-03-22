@@ -38,8 +38,8 @@ public class AutoList<T>
         looped = false;
     }
 
-    public bool GetLooped()
+    public int GetSize()
     {
-        return looped;
+        return list.Count;
     }
 }

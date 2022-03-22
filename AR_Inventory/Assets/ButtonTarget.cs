@@ -10,9 +10,6 @@ using UnityEngine.Assertions;
 using System;
 using UnityEngine.SceneManagement;
 
-
-
-
 public class ButtonTarget : MonoBehaviour
 {
     const int n = 4;
@@ -38,8 +35,10 @@ public class ButtonTarget : MonoBehaviour
 
     Dictionary<string, object> databaseData;
 
+    List<string> Categories = new List<string>();
+    Stack categories = new Stack();
+
     string[] names;
-    AutoList<string> categories = new AutoList<string>();
     string category = "";
     string targetType = "";
     int max = 0;
@@ -64,20 +63,15 @@ public class ButtonTarget : MonoBehaviour
 
     private void DatabaseEmpty()
     {
-        searchReady = false;
+        if (categories.Count == 0) SearchFail();
+
         if (databases.Count == 0)
         {
-            if (collections.Count == 0)
-            {
-                if (categories.GetLooped())
-                    SearchFail();
-                else loadCollections();
-            }
+            if (collections.Count == 0) loadCollections();
             else loadDatabasePaths();
         }
         else configDatabase();
     }
-
 
     private void loadCategories()
     {
@@ -89,21 +83,25 @@ public class ButtonTarget : MonoBehaviour
             for (int i = 0; i < tem.Count; i++)
             {
                 string x = (string) tem[i];
-                categories.AddItem(x);
+                Categories.Add(x);
+                categories.Push(x);
             }
             loadCollections();
         });
     }
     private void loadCollections()
     {
-        category = categories.GetItem();
+        if (categories.Count == 0) { SearchFail(); return; }
+
+        category = (string) categories.Pop();
+        Debug.Log(category);
         var firestore = FirebaseFirestore.DefaultInstance;
-        firestore.Document(category + "/DatabaseRefrences").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        firestore.Document("Databases/DatabaseRefrences").GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             Assert.IsNull(task.Exception);
             var result = task.Result.ToDictionary();
             debugBox.text = "Stage 1.1";
-            List<object> tem = (List<object>)result["Ref"];
+            List<object> tem = (List<object>)result[category];
             debugBox.text = "Stage 1.2";
             for (int i = 0; i < tem.Count; i++)
             {
@@ -122,6 +120,7 @@ public class ButtonTarget : MonoBehaviour
         {
             Assert.IsNull(task.Exception);
             var result = task.Result.ToDictionary();
+            Debug.Log(result["path"]);
             databases.Push(result);
             configDatabase();
         });
@@ -143,11 +142,7 @@ public class ButtonTarget : MonoBehaviour
         max = names.Length;
         textBox.text = "Press Search When Ready.";
         searchReady = true;
-        var kTimer = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
-        var timer = kTimer.GetComponent<KTimer>();
-        timer.TimerStop += Search;
-        timer.StartTimer(1);
-        
+        Search();
     }
 
     public void RestartSearch()
@@ -158,14 +153,19 @@ public class ButtonTarget : MonoBehaviour
 
     private void Search()
     {
-        restartButton.gameObject.SetActive(false);
         if (searchReady)
         {
-            if (targetType == "Image" && category == "Music")
-                CIT = createMIT;
-            else
-                CIT = createImageTarget;
-            
+            if (targetType == "Image")
+                switch (category)
+                {
+                    case "Music":
+                        CIT = createMIT; break;
+                    case "Video_Games":
+                        CIT = createVGIT; break;
+                    default:
+                        CIT = createImageTarget; break;
+                }
+
             ClearImages();
             place = 0;
             found = false;
@@ -214,6 +214,30 @@ public class ButtonTarget : MonoBehaviour
                     MIT.addEvent(IncrementCount);
                     kImages.Push(MIT);
                     place++;
+                    textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
+                }
+            }
+        }
+    }
+
+    public void createVGIT(float delay = .1f)
+    {
+        if (!found)
+        {
+            string studio = (string)databaseData["Studio"];
+            debugBox.text = studio;
+            for (int i = 0; i < n; i++)
+            {
+                if (place < max)
+                {
+                    var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Video_Games");
+                    var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                    VGImageTarget VGIT = new VGImageTarget(baseStr + databaseName + fileExt, names[place], ARobjClone, TimerClone, studio, delay);
+                    VGIT.addEvent(OnTargetStatusChanged);
+                    VGIT.addEvent(IncrementCount);
+                    kImages.Push(VGIT);
+                    place++;
+
                     textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
                 }
             }
