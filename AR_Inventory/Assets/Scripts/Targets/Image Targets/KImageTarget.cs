@@ -5,13 +5,11 @@ using Vuforia;
 using System;
 using Firebase.Firestore;
 using Firebase;
-using Firebase.Extensions;
-using UnityEngine.Assertions;
 
 
 public class KImageTarget : KTrackable
 {
-    ImageTargetBehaviour IT;
+    protected ImageTargetBehaviour IT;
 
     protected GameObject ARObj;
     protected GameObject Timer;
@@ -20,7 +18,6 @@ public class KImageTarget : KTrackable
     public event Action ITDone;
 
     bool press = false;
-
 
     public KImageTarget(string p, string n, float delay = .1f, GameObject ARoj = null, GameObject TObj = null)
     {
@@ -108,6 +105,7 @@ public class KImageTarget : KTrackable
             {
                 loaded = false;
                 ARObj.SetActive(false);
+                PopUpPipe.info = "";
             }
         }
     }
