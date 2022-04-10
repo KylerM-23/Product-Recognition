@@ -30,7 +30,30 @@ Description: The following code was for the screen object and changing its text.
         display.SetText(message);
     }
 
- * 
+~~~~~~~~~
+var firestore = FirebaseFirestore.DefaultInstance;
+        CollectionReference storeCollection = firestore.Collection("Stores");
+        Query possibleStores = storeCollection.WhereArrayContains("AllProducts", ID);
+        possibleStores.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            QuerySnapshot storeSnapshots = task.Result;
+            
+            foreach (DocumentSnapshot documentSnapshot in storeSnapshots.Documents)
+            {
+                //Debug.Log(String.Format("Document data for {0} document:", documentSnapshot.Id));
+                storeNames.Add(documentSnapshot.Id);
+                /*Dictionary<string, object> stores = documentSnapshot.ToDictionary();
+                var x = ()
+                foreach (KeyValuePair<string, object> pair in stores)
+                {
+                    var x = (List<string>)pair.Value;
+                    Debug.Log(x);
+                    Debug.Log(String.Format("{0}: {1}", pair.Key, pair.Value));
+                }
+            }
+            //PopUpPipe.LoadPopUp();
+        });
+* 
  * 
  * 
  */

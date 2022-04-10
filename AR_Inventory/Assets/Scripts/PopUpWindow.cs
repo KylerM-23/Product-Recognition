@@ -10,13 +10,13 @@ public class PopUpWindow : MonoBehaviour
     
     void Start()
     {
+        Debug.Log(PopUpPipe.info);
         info = PopUpPipe.info;
         data.text = info;
     }
     
     public void CloseWindow()
     {
-        PopUpPipe.info = "";
         PopUpPipe.ClosePopUp();
     }
 }

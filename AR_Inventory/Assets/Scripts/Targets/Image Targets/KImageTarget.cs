@@ -5,12 +5,13 @@ using Vuforia;
 using System;
 using Firebase.Firestore;
 using Firebase;
+using Firebase.Extensions;
 
 
 public class KImageTarget : KTrackable
 {
     protected ImageTargetBehaviour IT;
-
+    protected string ID;
     protected GameObject ARObj;
     protected GameObject Timer;
 
@@ -105,10 +106,26 @@ public class KImageTarget : KTrackable
             {
                 loaded = false;
                 ARObj.SetActive(false);
-                PopUpPipe.info = "";
             }
         }
     }
-    
-    
+
+    protected void GetStores()
+    {
+        List<string> storeNames = new List<string>();
+        var firestore = FirebaseFirestore.DefaultInstance;
+        CollectionReference storeCollection = firestore.Collection("Stores");
+        Query possibleStores = storeCollection.WhereArrayContains("AllProducts", ID);
+        possibleStores.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            QuerySnapshot storeSnapshots = task.Result;
+
+            foreach (DocumentSnapshot documentSnapshot in storeSnapshots.Documents)
+                storeNames.Add(documentSnapshot.Id);
+            PopUpPipe.SetStores(storeNames);
+            PopUpPipe.LoadPopUp();
+        });
+    }
+
+
 }

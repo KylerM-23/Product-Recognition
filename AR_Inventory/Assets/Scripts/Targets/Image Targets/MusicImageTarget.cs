@@ -5,6 +5,7 @@ using Vuforia;
 using Firebase.Firestore;
 using Firebase;
 using Firebase.Extensions;
+using System;
 
 public class MusicImageTarget : KImageTarget
 {
@@ -22,6 +23,7 @@ public class MusicImageTarget : KImageTarget
 
     void AquireData(ObserverBehaviour observerbehavour, TargetStatus status)
     {
+        PopUpPipe.SetLock(3);
         if (!dataLoaded)
         {
             dataLoaded = true;
@@ -32,8 +34,13 @@ public class MusicImageTarget : KImageTarget
                 var result = task.Result.ToDictionary();
                 Album = (string)result["Name"];
                 var temp = string.Format("Album: {0}\n Artist {1}\n", Album, Artist);
-                PopUpPipe.info = temp;
-            });
+                ID = (string)result["ID"];
+                PopUpPipe.SetInfo(temp, ID);
+                PopUpPipe.LoadPopUp();
+                GetStores();
+            }); 
         }
     }
+
+    
 }

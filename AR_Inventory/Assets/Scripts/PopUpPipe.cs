@@ -2,10 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
 public static class PopUpPipe
 {
-    public static string info;
+    public static string info { get; private set; }
+    public static string id { get; private set; }
+    static int locks = 0;
+    static int locks_max = 3;
+
+    public static List<string> stores { get; private set; }
+
     //add a field for product image and a list of possible stores
 
     private static bool loaded = false;
@@ -14,8 +21,12 @@ public static class PopUpPipe
     {
         if (!loaded)
         {
-            SceneManager.LoadScene("Scenes/PopUp", LoadSceneMode.Additive);
-            loaded = true;
+            locks++;
+            if (locks >= locks_max)
+            {
+                SceneManager.LoadScene("Scenes/PopUp");
+                loaded = true;
+            }
         }
         else
         {
@@ -27,12 +38,30 @@ public static class PopUpPipe
     {
         if (loaded)
         {
-            SceneManager.UnloadScene("Scenes/PopUp");
             loaded = false;
+            locks = 0;
+            SceneManager.LoadScene("Scenes/Search");
         }
         else
         {
             Debug.Log("No Window Is Open");
         }
+    }
+
+    public static void SetInfo(string information, string ID)
+    {
+        info = information;
+        id = ID;
+    }
+
+    public static void SetLock(int max_num)
+    {
+        locks_max = max_num;
+        locks = 0;
+    }
+
+    public static void SetStores(List<string> storeIn)
+    {
+        stores = storeIn;
     }
 }
