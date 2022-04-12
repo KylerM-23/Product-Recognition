@@ -110,22 +110,85 @@ public class KImageTarget : KTrackable
         }
     }
 
-    protected void GetStores()
+    protected void GetStores(int limit = 5)
     {
-        List<string> storeNames = new List<string>();
+        List<Dictionary<string, string>> storeList = new List<Dictionary<string, string>>();
+
         var firestore = FirebaseFirestore.DefaultInstance;
         CollectionReference storeCollection = firestore.Collection("Stores");
         Query possibleStores = storeCollection.WhereArrayContains("AllProducts", ID);
         possibleStores.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             QuerySnapshot storeSnapshots = task.Result;
-
             foreach (DocumentSnapshot documentSnapshot in storeSnapshots.Documents)
-                storeNames.Add(documentSnapshot.Id);
-            PopUpPipe.SetStores(storeNames);
-            PopUpPipe.LoadPopUp();
+            {
+                if (storeList.Count >= limit)
+                    break;
+                Dictionary<string, object> storeDict = documentSnapshot.ToDictionary();
+                Dictionary<string, string> storeInfo = new Dictionary<string, string>();
+                storeInfo.Add("DocumentID", (string) documentSnapshot.Id);
+                storeInfo.Add("Name", (string) storeDict["Name"]);
+                storeInfo.Add("Price", "N/A");
+                storeInfo.Add("Stock", "N/A");
+                storeList.Add(storeInfo);
+            }
+            if (storeList.Count == limit)
+                GetStoreInfo(storeList, 0, limit);
+            else
+                GetStoreInfo(storeList, 0, storeList.Count);
         });
     }
+
+    protected void GetStoreInfo(List<Dictionary<string, string>> storeList, int i, int limit = 5)
+    {
+        
+        int next = i + 1;
+        Debug.Log(i);
+        Debug.Log(next);
+        if (i >= limit)
+        {
+            Debug.Log("Done");
+            PopUpPipe.SetStores(storeList);
+            PopUpPipe.LoadPopUp();
+            return;
+        }
+        else
+        {
+            Debug.Log("T1");
+            Dictionary<string, string> current_store = storeList[i];
+            string path = String.Format("Stores/{0}/ProductInformation/IDs", current_store["DocumentID"]);
+            Debug.Log("T2");
+            try
+            {
+                var firestore = FirebaseFirestore.DefaultInstance;
+                firestore.Document(path).GetSnapshotAsync().ContinueWithOnMainThread(task =>
+                {
+                    Debug.Log("T3");
+                    var result = (Dictionary<string, object>)task.Result.ToDictionary();
+                    Debug.Log("T4");
+                    var ID_Dict = (Dictionary<string, object>)result["ID"];
+                    Debug.Log("T5");
+                    var doc = (DocumentReference)ID_Dict[ID];
+                    Debug.Log("T6");
+                    doc.GetSnapshotAsync().ContinueWithOnMainThread(task2 =>
+                    {
+                        var product_result = task2.Result.ToDictionary();
+                        current_store["Price"] = (string)product_result["Price"];
+                        current_store["Stock"] = (string)product_result["Stock"];
+                        GetStoreInfo(storeList, next, limit);
+                    });
+
+                });
+            }
+            catch
+            {
+                Debug.Log("Catch");
+                this.GetStoreInfo(storeList, next, limit);
+            }
+        }
+
+    }
+
 
 
 }

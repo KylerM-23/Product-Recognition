@@ -33,7 +33,7 @@ public class MusicImageTarget : KImageTarget
             {
                 var result = task.Result.ToDictionary();
                 Album = (string)result["Name"];
-                var temp = string.Format("Album: {0}\n Artist {1}\n", Album, Artist);
+                var temp = string.Format("Album: {0}\nArtist {1}\n", Album, Artist);
                 ID = (string)result["ID"];
                 PopUpPipe.SetInfo(temp, ID);
                 PopUpPipe.LoadPopUp();

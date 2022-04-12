@@ -11,7 +11,7 @@ public static class PopUpPipe
     static int locks = 0;
     static int locks_max = 3;
 
-    public static List<string> stores { get; private set; }
+    public static List<Dictionary<string, string>> stores { get; private set; }
 
     //add a field for product image and a list of possible stores
 
@@ -60,7 +60,7 @@ public static class PopUpPipe
         locks = 0;
     }
 
-    public static void SetStores(List<string> storeIn)
+    public static void SetStores(List<Dictionary<string, string>> storeIn)
     {
         stores = storeIn;
     }

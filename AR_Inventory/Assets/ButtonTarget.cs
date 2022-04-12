@@ -91,8 +91,6 @@ public class ButtonTarget : MonoBehaviour
     }
     private void loadCollections()
     {
-        if (categories.Count == 0) { SearchFail(); return; }
-
         category = (string) categories.Pop();
         Debug.Log(category);
         var firestore = FirebaseFirestore.DefaultInstance;
@@ -120,7 +118,6 @@ public class ButtonTarget : MonoBehaviour
         {
             Assert.IsNull(task.Exception);
             var result = task.Result.ToDictionary();
-            Debug.Log(result["path"]);
             databases.Push(result);
             configDatabase();
         });
