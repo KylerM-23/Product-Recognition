@@ -11,6 +11,7 @@ using Firebase.Extensions;
 public class KImageTarget : KTrackable
 {
     protected ImageTargetBehaviour IT;
+
     protected Dictionary<string, string> Info = new Dictionary<string, string>()
     {
         { "ID" , ""}
@@ -243,7 +244,6 @@ public class KImageTarget : KTrackable
         Debug.Log("test3");
         GetStores();
     }
-
 
 
 }

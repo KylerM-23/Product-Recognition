@@ -15,7 +15,7 @@ public class MusicImageTarget : KImageTarget
     {
         Database = "Music/Artists/" + FS + "/" + IT.TargetName;
         this.addEvent(AcquireData);
-        
+
         this.Info = new Dictionary<string, string>()
         {
             {"Artist", "" },
@@ -23,8 +23,4 @@ public class MusicImageTarget : KImageTarget
             { "ID" , ""}
         };
     }
-
-    
-
-    
 }
