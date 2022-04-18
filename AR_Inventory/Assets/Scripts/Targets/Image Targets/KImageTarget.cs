@@ -5,19 +5,27 @@ using Vuforia;
 using System;
 using Firebase.Firestore;
 using Firebase;
+using Firebase.Extensions;
 
 
 public class KImageTarget : KTrackable
 {
     protected ImageTargetBehaviour IT;
+    protected Dictionary<string, string> Info = new Dictionary<string, string>()
+    {
+        { "ID" , ""}
+    };
 
     protected GameObject ARObj;
     protected GameObject Timer;
 
     bool loaded = false;
     public event Action ITDone;
-
+    protected string Database = "";
+    protected bool dataLoaded = false;
     bool press = false;
+
+    protected DocumentReference FirestoreRef;
 
     public KImageTarget(string p, string n, float delay = .1f, GameObject ARoj = null, GameObject TObj = null)
     {
@@ -105,10 +113,137 @@ public class KImageTarget : KTrackable
             {
                 loaded = false;
                 ARObj.SetActive(false);
-                PopUpPipe.info = "";
             }
         }
     }
-    
-    
+
+    protected void GetStores(int limit = 5)
+    {
+        List<Dictionary<string, string>> storeList = new List<Dictionary<string, string>>();
+
+        var firestore = FirebaseFirestore.DefaultInstance;
+        CollectionReference storeCollection = firestore.Collection("Stores");
+        Query possibleStores = storeCollection.WhereArrayContains("AllProducts", Info["ID"]);
+        possibleStores.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            QuerySnapshot storeSnapshots = task.Result;
+            foreach (DocumentSnapshot documentSnapshot in storeSnapshots.Documents)
+            {
+                if (storeList.Count >= limit)
+                    break;
+                Dictionary<string, object> storeDict = documentSnapshot.ToDictionary();
+                Dictionary<string, string> storeInfo = new Dictionary<string, string>();
+                storeInfo.Add("DocumentID", (string) documentSnapshot.Id);
+                storeInfo.Add("Name", (string) storeDict["Name"]);
+                storeInfo.Add("Price", "N/A");
+                storeInfo.Add("Stock", "N/A");
+                storeList.Add(storeInfo);
+            }
+            if (storeList.Count == limit)
+                GetStoreInfo(storeList, 0, limit);
+            else
+                GetStoreInfo(storeList, 0, storeList.Count);
+        });
+    }
+
+    protected void GetStoreInfo(List<Dictionary<string, string>> storeList, int i, int limit = 5)
+    {
+        int next = i + 1;
+        Debug.Log(i);
+        Debug.Log(next);
+        if (i >= limit)
+        {
+            Debug.Log("Done");
+            PopUpPipe.SetStores(storeList);
+            PopUpPipe.LoadPopUp();
+            return;
+        }
+        else
+        {
+            Debug.Log("T1");
+            Dictionary<string, string> current_store = storeList[i];
+            string path = String.Format("Stores/{0}/ProductInformation/IDs", current_store["DocumentID"]);
+            Debug.Log("T2");
+            try
+            {
+                var firestore = FirebaseFirestore.DefaultInstance;
+                firestore.Document(path).GetSnapshotAsync().ContinueWithOnMainThread(task =>
+                {
+                    Debug.Log("T3");
+                    var result = (Dictionary<string, object>)task.Result.ToDictionary();
+                    Debug.Log("T4");
+                    var ID_Dict = (Dictionary<string, object>)result["ID"];
+                    Debug.Log("T5");
+                    var doc = (DocumentReference)ID_Dict[Info["ID"]];
+                    Debug.Log("T6");
+                    doc.GetSnapshotAsync().ContinueWithOnMainThread(task2 =>
+                    {
+                        var product_result = task2.Result.ToDictionary();
+                        current_store["Price"] = (string)product_result["Price"];
+                        current_store["Stock"] = (string)product_result["Stock"];
+                        GetStoreInfo(storeList, next, limit);
+                    });
+
+                });
+            }
+            catch
+            {
+                Debug.Log("Catch");
+                this.GetStoreInfo(storeList, next, limit);
+            }
+        }
+
+    }
+
+    protected void AcquireData(ObserverBehaviour observerbehavour, TargetStatus status)
+    {
+        PopUpPipe.SetLock(3);
+        if (!dataLoaded)
+        {
+            dataLoaded = true;
+            var firestore = FirebaseFirestore.DefaultInstance;
+            firestore.Document(Database).GetSnapshotAsync().ContinueWithOnMainThread(task =>
+            {
+                SetData(task.Result.ToDictionary());
+            });
+        }
+    }
+
+    /*
+    public virtual void SetData(Dictionary<string, object> result)
+    {
+        Info["ID"] = (string)result["ID"];
+        PopUpPipe.SetInfo("Default String", Info["ID"]);
+        PopUpPipe.LoadPopUp();
+        GetStores();
+    }*/
+
+    public virtual void SetData(Dictionary<string, object> result)
+    {
+        string output = "";
+        Debug.Log("test");
+
+        List<string> keyList = new List<string>(Info.Keys);
+        
+        foreach (string key in keyList)
+        {
+            Debug.Log(key);
+            Info[key] = (string)result[key];
+            Debug.Log(Info[key]);
+            if (key != "ID")
+            {
+                Debug.Log("Chevy Movie");
+                output = output + key + ": " + Info[key] + "\n";
+                Debug.Log("I drive");
+            }
+        }
+        Debug.Log("test2");
+        PopUpPipe.SetInfo(output, Info["ID"]);
+        PopUpPipe.LoadPopUp();
+        Debug.Log("test3");
+        GetStores();
+    }
+
+
+
 }

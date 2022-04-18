@@ -49,12 +49,9 @@ public class ButtonTarget : MonoBehaviour
     bool loading = false;
     bool searchReady = false;
     
-    
-
     delegate void CreateImageTarget(float delay = .1f);
     CreateImageTarget CIT = null;
 
-    // Start is called before the first frame update
     void Start()
     {
         restartButton.gameObject.SetActive(false);
@@ -91,10 +88,7 @@ public class ButtonTarget : MonoBehaviour
     }
     private void loadCollections()
     {
-        if (categories.Count == 0) { SearchFail(); return; }
-
         category = (string) categories.Pop();
-        Debug.Log(category);
         var firestore = FirebaseFirestore.DefaultInstance;
         firestore.Document("Databases/DatabaseRefrences").GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
@@ -114,13 +108,11 @@ public class ButtonTarget : MonoBehaviour
 
     private void loadDatabasePaths()
     {
-        debugBox.text = "Stage 2";
         var doc = (DocumentReference)collections.Pop();
         doc.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             Assert.IsNull(task.Exception);
             var result = task.Result.ToDictionary();
-            Debug.Log(result["path"]);
             databases.Push(result);
             configDatabase();
         });
@@ -128,15 +120,9 @@ public class ButtonTarget : MonoBehaviour
 
     private void configDatabase()
     {
-        debugBox.text = "Stage 3";
-        
         databaseData = (Dictionary<string, object>)databases.Pop();
-
-        debugBox.text = "Stage 3.1"; 
         databaseName = category + "/" + (string) databaseData["path"];
-        debugBox.text = "Stage 3.2";
         targetType = (string) databaseData["type"];
-        debugBox.text = databaseName;
         xml_loader.LoadXMLDatabase(baseStr + databaseName, targetType);
         names = xml_loader.GetItemNames();
         max = names.Length;
@@ -209,7 +195,7 @@ public class ButtonTarget : MonoBehaviour
                 {
                     var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Music");
                     var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
-                    MusicImageTarget MIT = new MusicImageTarget(baseStr + databaseName + fileExt, names[place], ARobjClone, TimerClone, artist, delay);
+                    MusicImageTarget MIT = new MusicImageTarget(databaseName, names[place],(string) databaseData["Firestore"],  ARobjClone, TimerClone, delay);
                     MIT.addEvent(OnTargetStatusChanged);
                     MIT.addEvent(IncrementCount);
                     kImages.Push(MIT);
@@ -225,14 +211,13 @@ public class ButtonTarget : MonoBehaviour
         if (!found)
         {
             string studio = (string)databaseData["Studio"];
-            debugBox.text = studio;
             for (int i = 0; i < n; i++)
             {
                 if (place < max)
                 {
                     var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Video_Games");
                     var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
-                    VGImageTarget VGIT = new VGImageTarget(baseStr + databaseName + fileExt, names[place], ARobjClone, TimerClone, studio, delay);
+                    VGImageTarget VGIT = new VGImageTarget(databaseName, names[place], (string)databaseData["Firestore"],  ARobjClone, TimerClone, delay);
                     VGIT.addEvent(OnTargetStatusChanged);
                     VGIT.addEvent(IncrementCount);
                     kImages.Push(VGIT);

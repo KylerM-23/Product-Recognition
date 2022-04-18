@@ -4,8 +4,15 @@ using UnityEngine;
 
 public class PopUpCategory : MonoBehaviour
 {
+    bool click = false;
+
+    void Start()
+    {
+        click = false;    
+    }
     void OnMouseDown()
     {
-        PopUpPipe.LoadPopUp();
+        if (!click)
+            PopUpPipe.LoadPopUp();
     }
 }

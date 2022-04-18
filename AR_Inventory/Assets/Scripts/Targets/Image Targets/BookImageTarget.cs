@@ -7,18 +7,19 @@ using Firebase;
 using Firebase.Extensions;
 using System;
 
-public class VGImageTarget : KImageTarget
-{
-    public VGImageTarget(string p, string n, string FS, GameObject ARObj, GameObject TObj, float delay = .1f) :
+public class BookImageTarget : KImageTarget
+{   
+
+    public BookImageTarget(string p, string n, string FS, GameObject ARObj, GameObject TObj, float delay = .1f) :
         base("Vuforia/" + p + ".xml", n, delay, ARObj, TObj)
     {
-        Database = "Video_Games/Companies/" + FS + "/" + IT.TargetName;
+        Database = "Books/Authors/" + FS + "/" + IT.TargetName;
         this.addEvent(AcquireData);
-        
+
         this.Info = new Dictionary<string, string>()
         {
-            {"Name", "" },
-            { "Studio" , ""},
+            {"Title", "" },
+            { "Author" , ""},
             { "Genre" , ""},
             { "Publisher", ""}
         };

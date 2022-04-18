@@ -5,13 +5,13 @@ using UnityEngine;
 public static class Camera_Manager
 {
     static public Camera ARCam;
-    static public Camera LessonCam;
+    static public Camera SecondCam;
     static bool AR = true;
 
     public static void SetCamera()
     {
         ARCam.enabled = AR;
-        LessonCam.enabled = !AR;
+        SecondCam.enabled = !AR;
     }
 
     public static void SwitchCamera()
