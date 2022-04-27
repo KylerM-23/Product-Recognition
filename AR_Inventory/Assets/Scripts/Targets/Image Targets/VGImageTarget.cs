@@ -20,7 +20,8 @@ public class VGImageTarget : KImageTarget
             {"Name", "" },
             { "Studio" , ""},
             { "Genre" , ""},
-            { "Publisher", ""}
+            { "Publisher", ""},
+            { "ID", ""}
         };
     }
 }

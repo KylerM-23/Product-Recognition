@@ -24,7 +24,7 @@ public static class PopUpPipe
             locks++;
             if (locks >= locks_max)
             {
-                SceneManager.LoadScene("Scenes/PopUp");
+                SceneManager.LoadScene("Scenes/PopUp", LoadSceneMode.Additive);
                 loaded = true;
             }
         }
@@ -40,7 +40,7 @@ public static class PopUpPipe
         {
             loaded = false;
             locks = 0;
-            SceneManager.LoadScene("Scenes/Search");
+            SceneManager.UnloadSceneAsync("Scenes/PopUp");
         }
         else
         {

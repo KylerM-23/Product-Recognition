@@ -21,7 +21,8 @@ public class BookImageTarget : KImageTarget
             {"Title", "" },
             { "Author" , ""},
             { "Genre" , ""},
-            { "Publisher", ""}
+            { "Publisher", ""},
+            {"ID","" }
         };
     }
 }

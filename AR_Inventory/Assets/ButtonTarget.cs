@@ -48,9 +48,6 @@ public class ButtonTarget : MonoBehaviour
     bool done = false;
     bool loading = false;
     bool searchReady = false;
-    
-    delegate void CreateImageTarget(float delay = .1f);
-    CreateImageTarget CIT = null;
 
     void Start()
     {
@@ -141,28 +138,17 @@ public class ButtonTarget : MonoBehaviour
     {
         if (searchReady)
         {
-            if (targetType == "Image")
-                switch (category)
-                {
-                    case "Music":
-                        CIT = createMIT; break;
-                    case "Video_Games":
-                        CIT = createVGIT; break;
-                    default:
-                        CIT = createImageTarget; break;
-                }
-
             ClearImages();
             place = 0;
             found = false;
             textBox.text = "Prepping Search";
             counter = 0;
             textBox.text = "Searching...";
-            CIT(3f);
+            createImageTarget(category, 3f);
         }
     }
 
-    public void createImageTarget(float delay = .1f)
+    public void createImageTarget(string cate, float delay = .1f)
     {
         if (!found)
         {
@@ -170,59 +156,27 @@ public class ButtonTarget : MonoBehaviour
             {
                 if (place < max)
                 {
-                    var ARobjClone = Instantiate(ARobject, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                    var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject(cate);
                     var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
-                    KImageTarget kIT = new KImageTarget(baseStr + databaseName + fileExt, names[place], delay, ARobjClone, TimerClone);
+
+                    KImageTarget kIT;
+
+                    switch (cate)
+                    {
+                        case "Music":
+                            kIT = new MusicImageTarget(databaseName, names[place], (string)databaseData["Firestore"], ARobjClone, TimerClone, delay); break;
+                        case "Video_Games":
+                            kIT = new VGImageTarget(databaseName, names[place], (string)databaseData["Firestore"], ARobjClone, TimerClone, delay); break;
+                        case "Books":
+                            kIT = new BookImageTarget(databaseName, names[place], (string)databaseData["Firestore"], ARobjClone, TimerClone, delay); break;
+                        default:
+                            kIT = new KImageTarget(baseStr + databaseName + fileExt, names[place], delay, ARobjClone, TimerClone); break;
+                    }
+
                     kIT.addEvent(OnTargetStatusChanged);
                     kIT.addEvent(IncrementCount);
                     kImages.Push(kIT);
                     place++;
-                    textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
-                }
-            }
-        }
-    }
-
-    public void createMIT(float delay = .1f)
-    {
-        if (!found)
-        {
-            string artist = (string) databaseData["Artist"];
-            debugBox.text = artist;
-            for (int i = 0; i < n; i++)
-            {
-                if (place < max)
-                {
-                    var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Music");
-                    var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
-                    MusicImageTarget MIT = new MusicImageTarget(databaseName, names[place],(string) databaseData["Firestore"],  ARobjClone, TimerClone, delay);
-                    MIT.addEvent(OnTargetStatusChanged);
-                    MIT.addEvent(IncrementCount);
-                    kImages.Push(MIT);
-                    place++;
-                    textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
-                }
-            }
-        }
-    }
-
-    public void createVGIT(float delay = .1f)
-    {
-        if (!found)
-        {
-            string studio = (string)databaseData["Studio"];
-            for (int i = 0; i < n; i++)
-            {
-                if (place < max)
-                {
-                    var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Video_Games");
-                    var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
-                    VGImageTarget VGIT = new VGImageTarget(databaseName, names[place], (string)databaseData["Firestore"],  ARobjClone, TimerClone, delay);
-                    VGIT.addEvent(OnTargetStatusChanged);
-                    VGIT.addEvent(IncrementCount);
-                    kImages.Push(VGIT);
-                    place++;
-
                     textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
                 }
             }
@@ -248,7 +202,7 @@ public class ButtonTarget : MonoBehaviour
         textBox.text = "Searching...";
         counter = 0;
         ClearImages();
-        CIT();
+        createImageTarget(category);
     }
 
     void OnTargetStatusChanged(ObserverBehaviour observerbehavour, TargetStatus status)
@@ -267,7 +221,6 @@ public class ButtonTarget : MonoBehaviour
         {
             KImageTarget kIT = (KImageTarget)kImages.Pop();
             if (kIT.active) kIT.kill();
-            DestroyImmediate(kIT);
             kIT = null;
         }
     }

@@ -3,7 +3,7 @@
     "m_SelectedPackage": {
         "deviceId": "RF8M222FWRB",
         "name": "com.KylerM.ARInventory",
-        "processId": 19786,
+        "processId": 27656,
         "exited": false
     },
     "m_SelectedPriority": 0,
@@ -48,6 +48,12 @@
             "deviceId": "RF8M222FWRB",
             "name": "com.KylerM.ARInventory",
             "processId": 19786,
+            "exited": false
+        },
+        {
+            "deviceId": "RF8M222FWRB",
+            "name": "com.KylerM.ARInventory",
+            "processId": 27656,
             "exited": false
         }
     ],

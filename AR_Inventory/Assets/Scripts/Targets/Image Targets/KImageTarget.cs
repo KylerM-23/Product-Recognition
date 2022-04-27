@@ -103,10 +103,8 @@ public class KImageTarget : KTrackable
         {
             var timer = Timer.GetComponent<KTimer>();
             timer.StopTimer();
-            if (!loaded)
-            {
+            if (!loaded) 
                 load_AROB();
-            }
         }
         else 
         {
@@ -161,22 +159,17 @@ public class KImageTarget : KTrackable
         }
         else
         {
-            Debug.Log("T1");
             Dictionary<string, string> current_store = storeList[i];
             string path = String.Format("Stores/{0}/ProductInformation/IDs", current_store["DocumentID"]);
-            Debug.Log("T2");
+            
             try
             {
                 var firestore = FirebaseFirestore.DefaultInstance;
                 firestore.Document(path).GetSnapshotAsync().ContinueWithOnMainThread(task =>
                 {
-                    Debug.Log("T3");
                     var result = (Dictionary<string, object>)task.Result.ToDictionary();
-                    Debug.Log("T4");
                     var ID_Dict = (Dictionary<string, object>)result["ID"];
-                    Debug.Log("T5");
                     var doc = (DocumentReference)ID_Dict[Info["ID"]];
-                    Debug.Log("T6");
                     doc.GetSnapshotAsync().ContinueWithOnMainThread(task2 =>
                     {
                         var product_result = task2.Result.ToDictionary();
@@ -210,15 +203,6 @@ public class KImageTarget : KTrackable
         }
     }
 
-    /*
-    public virtual void SetData(Dictionary<string, object> result)
-    {
-        Info["ID"] = (string)result["ID"];
-        PopUpPipe.SetInfo("Default String", Info["ID"]);
-        PopUpPipe.LoadPopUp();
-        GetStores();
-    }*/
-
     public virtual void SetData(Dictionary<string, object> result)
     {
         string output = "";
@@ -232,16 +216,11 @@ public class KImageTarget : KTrackable
             Info[key] = (string)result[key];
             Debug.Log(Info[key]);
             if (key != "ID")
-            {
-                Debug.Log("Chevy Movie");
                 output = output + key + ": " + Info[key] + "\n";
-                Debug.Log("I drive");
-            }
         }
-        Debug.Log("test2");
+        
         PopUpPipe.SetInfo(output, Info["ID"]);
         PopUpPipe.LoadPopUp();
-        Debug.Log("test3");
         GetStores();
     }
 

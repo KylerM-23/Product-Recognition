@@ -56,4 +56,118 @@ var firestore = FirebaseFirestore.DefaultInstance;
 * 
  * 
  * 
- */
+ * 
+ *         /*
+        public void createImageTarget(float delay = .1f)
+        {
+            if (!found)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    if (place < max)
+                    {
+                        var ARobjClone = Instantiate(ARobject, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                        var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                        KImageTarget kIT = new KImageTarget(baseStr + databaseName + fileExt, names[place], delay, ARobjClone, TimerClone);
+                        kIT.addEvent(OnTargetStatusChanged);
+                        kIT.addEvent(IncrementCount);
+                        kImages.Push(kIT);
+                        place++;
+                        textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
+                    }
+                }
+            }
+        }
+
+        
+        public void createMIT(float delay = .1f)
+    {
+        if (!found)
+        {
+            string artist = (string) databaseData["Artist"];
+            debugBox.text = artist;
+            for (int i = 0; i < n; i++)
+            {
+                if (place < max)
+                {
+                    var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Music");
+                    var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                    MusicImageTarget MIT = new MusicImageTarget(databaseName, names[place],(string) databaseData["Firestore"],  ARobjClone, TimerClone, delay);
+                    MIT.addEvent(OnTargetStatusChanged);
+                    MIT.addEvent(IncrementCount);
+                    kImages.Push(MIT);
+                    place++;
+                    textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
+                }
+            }
+        }
+    }
+
+    public void createVGIT(float delay = .1f)
+    {
+        if (!found)
+        {
+            string studio = (string)databaseData["Studio"];
+            for (int i = 0; i < n; i++)
+            {
+                if (place < max)
+                {
+                    var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Video_Games");
+                    var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                    VGImageTarget VGIT = new VGImageTarget(databaseName, names[place], (string)databaseData["Firestore"],  ARobjClone, TimerClone, delay);
+                    VGIT.addEvent(OnTargetStatusChanged);
+                    VGIT.addEvent(IncrementCount);
+                    kImages.Push(VGIT);
+                    place++;
+
+                    textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
+                }
+            }
+        }
+    }
+
+    public void createBIT(float delay = .1f)
+    {
+        if (!found)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                if (place < max)
+                {
+                    var ARobjClone = CategoryManager.GetComponent<CategoryRetrival>().GetObject("Books");
+                    var TimerClone = Instantiate(TObj, new Vector3(-0.5f, -7, 0), Quaternion.identity);
+                    BookImageTarget BIT = new BookImageTarget(databaseName, names[place], (string)databaseData["Firestore"], ARobjClone, TimerClone, delay);
+                    BIT.addEvent(OnTargetStatusChanged);
+                    BIT.addEvent(IncrementCount);
+                    kImages.Push(BIT);
+                    place++;
+
+                    textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
+                }
+            }
+        }
+    }
+
+/*            if (targetType == "Image")
+                switch (category)
+                {
+                    case "Music":
+                        CIT = createMIT; break;
+                    case "Video_Games":
+                        CIT = createVGIT; break;
+                    case "Books":
+                        CIT = createBIT; break;
+                    default:
+                        CIT = createImageTarget; break;
+                }
+        }
+    }
+    /*
+    public virtual void SetData(Dictionary<string, object> result)
+    {
+        Info["ID"] = (string)result["ID"];
+        PopUpPipe.SetInfo("Default String", Info["ID"]);
+        PopUpPipe.LoadPopUp();
+        GetStores();
+    }
+*/
