@@ -10,6 +10,7 @@ public static class PopUpPipe
     public static string id { get; private set; }
     static int locks = 0;
     static int locks_max = 3;
+    static bool data_aquired = false;
 
     public static List<Dictionary<string, string>> stores { get; private set; }
 
@@ -26,6 +27,7 @@ public static class PopUpPipe
             {
                 SceneManager.LoadScene("Scenes/PopUp", LoadSceneMode.Additive);
                 loaded = true;
+                data_aquired = true;
             }
         }
         else
@@ -39,7 +41,6 @@ public static class PopUpPipe
         if (loaded)
         {
             loaded = false;
-            locks = 0;
             SceneManager.UnloadSceneAsync("Scenes/PopUp");
         }
         else
@@ -57,7 +58,8 @@ public static class PopUpPipe
     public static void SetLock(int max_num)
     {
         locks_max = max_num;
-        locks = 0;
+        if (data_aquired == false)
+            locks = 0;
     }
 
     public static void SetStores(List<Dictionary<string, string>> storeIn)

@@ -53,7 +53,8 @@ public class KImageTarget : KTrackable
     public void load_AROB()
     {
         loaded = true;
-        ARObj.transform.position = new Vector3(-0.5f, -7, 0);
+        ARObj.transform.position = IT.transform.position;
+        ARObj.transform.localScale  = IT.transform.localScale/4;
         ARObj.transform.parent = IT.transform;
         ARObj.SetActive(true);
         ARObj.transform.Rotate(new Vector3(0, 180, 0));

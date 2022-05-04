@@ -13,8 +13,6 @@ using UnityEngine.SceneManagement;
 public class ButtonTarget : MonoBehaviour
 {
     const int n = 4;
-    public Text textBox;
-    public Text debugBox;
     public GameObject ARobject;
     public GameObject TObj;
 
@@ -91,9 +89,7 @@ public class ButtonTarget : MonoBehaviour
         {
             Assert.IsNull(task.Exception);
             var result = task.Result.ToDictionary();
-            debugBox.text = "Stage 1.1";
             List<object> tem = (List<object>)result[category];
-            debugBox.text = "Stage 1.2";
             for (int i = 0; i < tem.Count; i++)
             {
                 var x = tem[i];
@@ -123,7 +119,6 @@ public class ButtonTarget : MonoBehaviour
         xml_loader.LoadXMLDatabase(baseStr + databaseName, targetType);
         names = xml_loader.GetItemNames();
         max = names.Length;
-        textBox.text = "Press Search When Ready.";
         searchReady = true;
         Search();
     }
@@ -141,9 +136,7 @@ public class ButtonTarget : MonoBehaviour
             ClearImages();
             place = 0;
             found = false;
-            textBox.text = "Prepping Search";
             counter = 0;
-            textBox.text = "Searching...";
             createImageTarget(category, 3f);
         }
     }
@@ -177,7 +170,6 @@ public class ButtonTarget : MonoBehaviour
                     kIT.addEvent(IncrementCount);
                     kImages.Push(kIT);
                     place++;
-                    textBox.text = "Progress: " + place.ToString() + "/" + max.ToString() + " images.";
                 }
             }
         }
@@ -187,7 +179,6 @@ public class ButtonTarget : MonoBehaviour
     {
         done = true;
         restartButton.gameObject.SetActive(true);
-        textBox.text = "Search Failed.";
     }
 
     void IncrementCount()
@@ -199,7 +190,6 @@ public class ButtonTarget : MonoBehaviour
 
     void IncrementRestart()
     {
-        textBox.text = "Searching...";
         counter = 0;
         ClearImages();
         createImageTarget(category);
@@ -210,7 +200,6 @@ public class ButtonTarget : MonoBehaviour
         if (status.Status == Status.TRACKED && status.StatusInfo == StatusInfo.NORMAL)
         {
             restartButton.gameObject.SetActive(true);
-            textBox.text = "Found " + observerbehavour.TargetName;
             found = true;
         }
     }
