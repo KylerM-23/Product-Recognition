@@ -413,10 +413,14 @@ MonoBehaviour:
   - Music
   - Video_Games
   - Books
+  - Food
+  - Home&Office
   items:
   - {fileID: 7445507092487354669, guid: 8923510878c9fd847ac7c07a123e84a7, type: 3}
   - {fileID: 2519988322593225614, guid: 07fc5979b8340ae4f8fcfa295a17bc42, type: 3}
   - {fileID: 2519988322593225614, guid: 8f6ce962c9b7ade4ebab032281ad7a0e, type: 3}
+  - {fileID: 2519988322593225614, guid: 3bb37b6d9cd191449a0e6d0c9946bbcd, type: 3}
+  - {fileID: 2519988322593225614, guid: aec71f327ecaae845be11db84357eb66, type: 3}
 --- !u!4 &482201389
 Transform:
   m_ObjectHideFlags: 0

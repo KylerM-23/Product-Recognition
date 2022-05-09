@@ -162,6 +162,10 @@ public class ButtonTarget : MonoBehaviour
                             kIT = new VGImageTarget(databaseName, names[place], (string)databaseData["Firestore"], ARobjClone, TimerClone, delay); break;
                         case "Books":
                             kIT = new BookImageTarget(databaseName, names[place], (string)databaseData["Firestore"], ARobjClone, TimerClone, delay); break;
+                        case "Food":
+                            kIT = new FImageTarget(databaseName, names[place], (string)databaseData["Firestore"], ARobjClone, TimerClone, delay); break;
+                        case "Home&Office":
+                            kIT = new H_OImageTarget(databaseName, names[place], (string)databaseData["Firestore"], ARobjClone, TimerClone, delay); break;
                         default:
                             kIT = new KImageTarget(baseStr + databaseName + fileExt, names[place], delay, ARobjClone, TimerClone); break;
                     }
